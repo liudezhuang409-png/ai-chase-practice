@@ -1,10 +1,15 @@
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getDemoPlan, getDemoPracticeCount } from "@/lib/demo";
 import type { UserPlan } from "@/lib/types";
 import { startOfChinaDayIso } from "@/lib/utils";
 
-export const FREE_DAILY_LIMIT = 2;
+export const FREE_DAILY_LIMIT = 3;
 
 export async function getUserPlan(userId: string): Promise<UserPlan> {
+  if (userId === "demo-user") {
+    return getDemoPlan(userId);
+  }
+
   const { data, error } = await supabaseAdmin
     .from("users")
     .select("plan")
@@ -15,14 +20,19 @@ export async function getUserPlan(userId: string): Promise<UserPlan> {
     return "free";
   }
 
-  return data.plan === "pro" ? "pro" : "free";
+  return data.plan === "premium" ? "premium" : data.plan === "pro" ? "pro" : "free";
 }
 
 export async function getTodayPracticeCount(userId: string) {
+  if (userId === "demo-user") {
+    return getDemoPracticeCount(userId);
+  }
+
   const { count, error } = await supabaseAdmin
     .from("practice_sessions")
     .select("*", { count: "exact", head: true })
     .eq("user_id", userId)
+    .eq("question_payload->>source", "ai")
     .gte("generated_at", startOfChinaDayIso());
 
   if (error) {
@@ -35,7 +45,7 @@ export async function getTodayPracticeCount(userId: string) {
 export async function getPracticeQuotaSnapshot(userId: string) {
   const plan = await getUserPlan(userId);
 
-  if (plan === "pro") {
+  if (plan !== "free") {
     return {
       plan,
       todayCount: 0,

@@ -100,26 +100,24 @@ export function PayPanel() {
   }
 
   return (
-    <section className="panel" style={{ padding: 36, display: "grid", gap: 24 }}>
-      <div className="eyebrow">upgrade to pro</div>
-      <h1 style={{ margin: 0, fontSize: "clamp(36px, 7vw, 72px)" }}>别让系统停手。</h1>
-      <p className="muted" style={{ maxWidth: 700, lineHeight: 1.8 }}>
-        当前先做统一订单与支付状态机。你可以选择支付宝或微信支付入口，下单后通过 mock 回调完成联调，
-        未来再替换成真实商户渠道。
-      </p>
-
-      <div className="danger-box">
-        Pro 套餐：{formatFenToYuan(order?.amountFen ?? 1990)} / 解锁无限追杀、无限变式题、当天不再限次。
+    <section className="correction-side-panel">
+      <div className="section-heading">
+        <span className="eyebrow">checkout</span>
+        <h2>开通 9.9 会员</h2>
       </div>
+      <p className="helper-copy muted">开通后，错题分析、错误类型纠正和变式题训练不再限制次数。</p>
 
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+      <div className="danger-box">订单金额：{formatFenToYuan(order?.amountFen ?? 990)}</div>
+
+      <div className="segment-row">
         {(["alipay", "wechat"] as const).map((item) => (
           <button
             key={item}
             className="button"
             onClick={() => setChannel(item)}
             style={{
-              background: channel === item ? "rgba(255,255,255,0.12)" : undefined
+              background: channel === item ? "rgba(111,143,174,0.12)" : undefined,
+              borderColor: channel === item ? "rgba(111,143,174,0.28)" : undefined
             }}
           >
             {CHANNEL_LABEL[item]}
@@ -127,35 +125,28 @@ export function PayPanel() {
         ))}
       </div>
 
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+      <div className="page-actions">
         <button className="button button--danger" onClick={handleCreateOrder} disabled={loading}>
           {loading ? "创建中..." : `生成${CHANNEL_LABEL[channel]}订单`}
         </button>
         {order ? (
           <button className="button" onClick={handleMockPaid} disabled={loading || status === "paid"}>
-            {status === "paid" ? "已支付" : "模拟支付成功"}
+            {status === "paid" ? "已完成支付" : "模拟支付成功"}
           </button>
         ) : null}
       </div>
 
       {order ? (
-        <div className="panel" style={{ padding: 20, display: "grid", gap: 10 }}>
-          <div>订单号：{order.orderNo}</div>
-          <div>渠道：{CHANNEL_LABEL[order.channel]}</div>
-          <div>金额：{formatFenToYuan(order.amountFen)}</div>
-          <div>状态：{status ?? order.status}</div>
-          {order.payUrl ? (
-            <a href={order.payUrl} target="_blank" rel="noreferrer" className="muted">
-              打开支付链接（当前为 mock 链接）
-            </a>
-          ) : null}
-          {order.qrPayload ? <div className="muted">二维码载荷：{order.qrPayload}</div> : null}
+        <div className="status-box">
+          订单号：{order.orderNo}
+          <br />
+          支付渠道：{CHANNEL_LABEL[order.channel]}
+          <br />
+          订单状态：{status ?? order.status}
         </div>
       ) : null}
 
-      {status === "paid" ? (
-        <div className="danger-box">支付成功，刷新后即可获得 Pro 无限练权限。</div>
-      ) : null}
+      {status === "paid" ? <div className="danger-box">支付成功，会员权益已生效。</div> : null}
       {error ? <div className="danger-box">{error}</div> : null}
     </section>
   );

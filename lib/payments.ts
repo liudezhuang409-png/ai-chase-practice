@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { createDemoOrder, getDemoOrder, markDemoOrderPaid } from "@/lib/demo";
 import type {
   CreateOrderResponse,
   PaymentChannel,
@@ -8,7 +9,7 @@ import type {
 import { createOrderNo } from "@/lib/utils";
 import { serverEnv } from "@/lib/env";
 
-export const PRO_PRICE_FEN = 1990;
+export const PRO_PRICE_FEN = 990;
 
 function getMockPayUrl(orderNo: string) {
   return `${serverEnv.APP_URL}/pay?orderNo=${orderNo}&mockPay=1`;
@@ -18,7 +19,13 @@ export async function createOrder(
   userId: string,
   channel: PaymentChannel
 ): Promise<CreateOrderResponse> {
+  if (userId === "demo-user") {
+    return createDemoOrder(userId, channel);
+  }
+
   const orderNo = createOrderNo();
+  const planTarget = "pro";
+  const amountFen = PRO_PRICE_FEN;
   const providerPayload =
     channel === "mock"
       ? { mode: "mock" }
@@ -28,8 +35,8 @@ export async function createOrder(
     user_id: userId,
     order_no: orderNo,
     channel,
-    plan_target: "pro",
-    amount_fen: PRO_PRICE_FEN,
+    plan_target: planTarget,
+    amount_fen: amountFen,
     status: "pending",
     provider_payload: providerPayload
   });
@@ -44,11 +51,15 @@ export async function createOrder(
     status: "pending",
     payUrl: getMockPayUrl(orderNo),
     qrPayload: `mock:${channel}:${orderNo}`,
-    amountFen: PRO_PRICE_FEN
+    amountFen
   };
 }
 
 export async function getOrderForUser(orderNo: string, userId: string) {
+  if (userId === "demo-user") {
+    return getDemoOrder(orderNo, userId);
+  }
+
   const { data, error } = await supabaseAdmin
     .from("payment_orders")
     .select("*")
@@ -68,6 +79,16 @@ export async function markOrderPaid(params: {
   channel: PaymentChannel;
   payload: Record<string, unknown>;
 }) {
+  if (typeof params.payload.userId === "string" && params.payload.userId === "demo-user") {
+    const order = markDemoOrderPaid(params.orderNo, params.payload.userId);
+
+    if (!order) {
+      throw new Error("ORDER_NOT_FOUND");
+    }
+
+    return order;
+  }
+
   const { data: order, error: orderError } = await supabaseAdmin
     .from("payment_orders")
     .select("*")
@@ -112,7 +133,8 @@ export async function markOrderPaid(params: {
   await supabaseAdmin
     .from("users")
     .update({
-      plan: "pro",
+      plan: order.plan_target,
+      is_paid: true,
       plan_expires_at: null,
       updated_at: new Date().toISOString()
     })
@@ -122,6 +144,10 @@ export async function markOrderPaid(params: {
 }
 
 export async function closeExpiredOrders() {
+  if (process.env.NEXT_PUBLIC_SUPABASE_URL === "https://example.supabase.co") {
+    return;
+  }
+
   const cutoff = new Date(Date.now() - 30 * 60 * 1000).toISOString();
 
   const { error } = await supabaseAdmin

@@ -26,3 +26,11 @@ export function formatFenToYuan(amountFen: number) {
 export function createOrderNo() {
   return `ord_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
+
+export function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
+}
+
+export function toPercent(value: number) {
+  return `${Math.round(value * 100)}%`;
+}

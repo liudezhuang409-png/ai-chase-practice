@@ -1,0 +1,25 @@
+{
+  "builtAt": "2026-07-13T13:15:39.984Z",
+  "sourceRoot": "/Users/liudezhuang/Desktop/02_学习资料",
+  "totalMaterials": 559,
+  "docxMaterials": 264,
+  "pdfMaterials": 295,
+  "pdfMaxPages": 30,
+  "pdfMaxBytes": 20971520,
+  "skippedMaterials": 230,
+  "snippetCount": 99,
+  "questionCount": 2400,
+  "questionCountBySubject": {
+    "财务管理": 1158,
+    "中级会计实务": 849,
+    "经济法": 238,
+    "未识别科目": 155
+  },
+  "questionCountByType": {
+    "single": 1245,
+    "multiple": 818,
+    "calculation": 168,
+    "judge": 154,
+    "comprehensive": 15
+  }
+}

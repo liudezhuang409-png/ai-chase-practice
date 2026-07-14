@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { getAuthedUser } from "@/lib/auth";
-import { LogoutButton } from "@/components/logout-button";
+import { ExamNavigation } from "@/components/exam-navigation";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AI错题追杀器",
-  description: "错了就继续追杀，直到会为止。"
+  title: "Exam OS｜中级会计章节掌握提分系统",
+  description: "用章节掌握度模型替代盲目刷题，用学习路径算法决定今天学什么。"
 };
 
 export default async function RootLayout({
@@ -15,38 +14,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const user = await getAuthedUser();
-
   return (
     <html lang="zh-CN">
       <body>
-        <header style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-          <div
-            className="shell"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "20px 0"
-            }}
-          >
-            <Link href="/" style={{ fontWeight: 800, letterSpacing: "0.08em" }}>
-              AI错题追杀器
-            </Link>
-            <nav
-              style={{
-                display: "flex",
-                gap: 12,
-                alignItems: "center",
-                flexWrap: "wrap"
-              }}
-            >
-              <Link href="/practice">做题</Link>
-              <Link href="/pay">付费</Link>
-              {user ? <LogoutButton email={user.email ?? "已登录"} /> : null}
-            </nav>
-          </div>
-        </header>
-        {children}
+        {user ? <ExamNavigation user={user}>{children}</ExamNavigation> : children}
       </body>
     </html>
   );

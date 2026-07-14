@@ -14,10 +14,10 @@ export async function POST(request: Request) {
     const body = bodySchema.parse(await request.json());
     const plan = await getUserPlan(user.id);
 
-    if (plan === "pro") {
+    if (plan !== "free") {
       return NextResponse.json(
         {
-          error: "你已经是 Pro 用户，无需重复支付。"
+          error: "你已经是 9.9 会员，无需重复支付。"
         },
         { status: 409 }
       );

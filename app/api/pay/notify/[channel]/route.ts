@@ -41,6 +41,7 @@ export async function POST(
       orderNo: body.orderNo,
       channel,
       payload: {
+        userId: user.id,
         providerTradeNo: body.providerTradeNo,
         notifiedAt: new Date().toISOString(),
         source: "mock-notify"
